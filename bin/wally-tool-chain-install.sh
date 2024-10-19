@@ -32,7 +32,7 @@
 
 # Increasing NUM_THREADS will speed up parallel compilation of the tools
 NUM_THREADS=$(nproc --ignore 1) # One less than the total number of threads
-
+#NUM_THREADS=$1
 # Colors
 BOLD='\033[1m'
 UNDERLINE='\033[4m'
@@ -213,7 +213,9 @@ if git_check "riscv-gnu-toolchain" "https://github.com/riscv/riscv-gnu-toolchain
     cd riscv-gnu-toolchain
     git reset --hard && git clean -f && git checkout b488ddb #&& git pull
     ./configure --prefix="${RISCV}" --with-multilib-generator="rv32e-ilp32e--;rv32i-ilp32--;rv32im-ilp32--;rv32iac-ilp32--;rv32imac-ilp32--;rv32imafc-ilp32f--;rv32imafdc-ilp32d--;rv64i-lp64--;rv64ic-lp64--;rv64iac-lp64--;rv64imac-lp64--;rv64imafdc-lp64d--;rv64im-lp64--;"
-    make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    #make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    make clean
+    make 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     if [ "$clean" ]; then
         cd "$RISCV"
         rm -rf riscv-gnu-toolchain
@@ -262,7 +264,9 @@ if git_check "qemu" "https://github.com/qemu/qemu" "$RISCV/include/qemu-plugin.h
     git reset --hard && git clean -f && git checkout master && git pull --recurse-submodules -j "${NUM_THREADS}"
     git submodule update --init --recursive
     ./configure --target-list=riscv64-softmmu --prefix="$RISCV"
-    make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    #make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    make clean
+    make 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     make install 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     if [ "$clean" ]; then
         cd "$RISCV"
@@ -285,7 +289,9 @@ if git_check "riscv-isa-sim" "https://github.com/riscv-software-src/riscv-isa-si
     mkdir -p build
     cd build
     ../configure --prefix="$RISCV"
-    make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    #make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    make clean
+    make 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     make install 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     if [ "$clean" ]; then
         cd "$RISCV"
@@ -310,7 +316,9 @@ if git_check "verilator" "https://github.com/verilator/verilator" "$RISCV/share/
     git reset --hard && git clean -f && git checkout master && git pull
     autoconf
     ./configure --prefix="$RISCV"
-    make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    #make -j "${NUM_THREADS}" 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    make clean
+    make 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     make install 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     if [ "$clean" ]; then
         cd "$RISCV"
@@ -344,8 +352,9 @@ STATUS="riscv-sail-model"
 if git_check "sail-riscv" "https://github.com/riscv/sail-riscv.git" "$RISCV/bin/riscv_sim_RV32"; then
     cd sail-riscv
     git reset --hard && git clean -f && git checkout master && git pull
-    ARCH=RV64 make -j "${NUM_THREADS}" c_emulator/riscv_sim_RV64  2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
-    ARCH=RV32 make -j "${NUM_THREADS}" c_emulator/riscv_sim_RV32 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    #ARCH=RV64 make -j "${NUM_THREADS}" c_emulator/riscv_sim_RV64  2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    ARCH=RV64 make c_emulator/riscv_sim_RV64  2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    ARCH=RV32 make c_emulator/riscv_sim_RV32 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     cp -f c_emulator/riscv_sim_RV64 "$RISCV"/bin/riscv_sim_RV64
     cp -f c_emulator/riscv_sim_RV32 "$RISCV"/bin/riscv_sim_RV32
     if [ "$clean" ]; then
@@ -385,11 +394,11 @@ else
 fi
 cd "$dir"/../linux
 if [ ! -e "$RISCV"/buildroot ]; then
-    make 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    make -j 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     echo -e "${SUCCESS_COLOR}Buildroot successfully installed and Linux testvectors created!${ENDC}"
 elif [ ! -e "$RISCV"/linux-testvectors ]; then
     echo -e "${OK_COLOR}Buildroot already exists, but Linux testvectors are missing. Generating them now.${ENDC}"
-    make dumptvs 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
+    make -j  dumptvs 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
     echo -e "${SUCCESS_COLOR}Linux testvectors successfully generated!${ENDC}"
 else
     echo -e "${OK_COLOR}Buildroot and Linux testvectors already exist.${ENDC}"
