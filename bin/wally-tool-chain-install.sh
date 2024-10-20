@@ -426,22 +426,7 @@ if [ ! "$no_buidroot" ]; then
         echo -e "${OK_COLOR}Buildroot and Linux testvectors already exist.${ENDC}"
     fi
 else
-<<<<<<< HEAD
-    export LD_LIBRARY_PATH=$RISCV/lib:$RISCV/lib64:$LD_LIBRARY_PATH:$RISCV/riscv64-unknown-elf/lib:$RISCV/lib/x86_64-linux-gnu/
-fi
-cd "$dir"/../linux
-if [ ! -e "$RISCV"/buildroot ]; then
-    make -j 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
-    echo -e "${SUCCESS_COLOR}Buildroot successfully installed and Linux testvectors created!${ENDC}"
-elif [ ! -e "$RISCV"/linux-testvectors ]; then
-    echo -e "${OK_COLOR}Buildroot already exists, but Linux testvectors are missing. Generating them now.${ENDC}"
-    make -j  dumptvs 2>&1 | logger $STATUS; [ "${PIPESTATUS[0]}" == 0 ]
-    echo -e "${SUCCESS_COLOR}Linux testvectors successfully generated!${ENDC}"
-else
-    echo -e "${OK_COLOR}Buildroot and Linux testvectors already exist.${ENDC}"
-=======
     echo -e "${OK_COLOR}Skipping Buildroot and Linux testvectors.${ENDC}"
->>>>>>> upstream/main
 fi
 
 
